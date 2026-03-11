@@ -102,18 +102,6 @@
       border-bottom: 1px solid var(--border);
     }
     nav .container { display: flex; align-items: center; width: 100%; }
-    .wordmark {
-      font-family: var(--font-display);
-      font-size: 16px; font-weight: 700;
-      letter-spacing: -0.02em;
-      color: var(--white); text-decoration: none;
-    }
-    .nav-dot {
-      width: 5px; height: 5px; border-radius: 50%;
-      background: var(--white); margin-left: 8px;
-      animation: blink 2.4s ease-in-out infinite;
-    }
-    @keyframes blink { 0%,100%{opacity:1;}50%{opacity:0.2;} }
 
     /* HERO */
     .hero {
@@ -334,9 +322,10 @@
 
 <!-- NAV -->
 <nav>
-  <div class="container">
-    <a class="wordmark" href="/">GenX Labs</a>
-    <div class="nav-dot"></div>
+  <div class="container" style="justify-content: center;">
+    <a href="/">
+      <img src="logo.png" alt="GenX Labs" height="32" style="display:block;" />
+    </a>
   </div>
 </nav>
 
@@ -399,7 +388,7 @@
         <div class="product-tag">M&amp;A · Legal · Finance</div>
         <p class="product-name">AxiomRisk</p>
         <p class="product-desc">AI-powered contract risk analysis for M&amp;A professionals. Upload contracts, get instant risk flags, move faster on deals.</p>
-        <a class="product-link" href="https://axiomrisk.ai" target="_blank" rel="noopener">axiomrisk.ai →</a>
+        <a class="product-link" href="https://app.axiomrisk.ai" target="_blank" rel="noopener">axiomrisk.ai →</a>
       </div>
       <div class="product-card reveal reveal-d1">
         <div class="card-glow"></div>
