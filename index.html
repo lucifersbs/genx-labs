@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GenX Labs — AI Product Studio</title>
+  <meta name="description" content="GenX Labs is a UAE-based AI software studio building focused, high-quality tools for professionals." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080808;
+      --border: rgba(255,255,255,0.08);
+      --border-hover: rgba(255,255,255,0.2);
+      --white: #ffffff;
+      --muted: rgba(255,255,255,0.38);
+      --font-display: 'Syne', sans-serif;
+      --font-body: 'DM Sans', sans-serif;
+    }
+
+    html { font-size: 16px; scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--white);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+      cursor: none;
+    }
+
+    /* CUSTOM CURSOR */
+    #cursor {
+      position: fixed;
+      width: 8px; height: 8px;
+      background: var(--white);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      transition: width 0.2s ease, height 0.2s ease;
+      mix-blend-mode: difference;
+    }
+    #cursor-ring {
+      position: fixed;
+      width: 36px; height: 36px;
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(-50%, -50%);
+      transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease;
+    }
+    body.cursor-hover #cursor { width: 14px; height: 14px; }
+    body.cursor-hover #cursor-ring { width: 54px; height: 54px; border-color: rgba(255,255,255,0.2); }
+
+    #mouse-glow {
+      position: fixed;
+      width: 520px; height: 520px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.025) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+      transform: translate(-50%, -50%);
+    }
+
+    /* GRAIN */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      opacity: 0.65;
+    }
+
+    #bg-canvas {
+      position: fixed; inset: 0;
+      z-index: 0;
+      opacity: 0.28;
+      pointer-events: none;
+    }
+
+    .container {
+      position: relative; z-index: 2;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 48px;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100; height: 64px;
+      display: flex; align-items: center;
+      background: rgba(8,8,8,0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+    nav .container { display: flex; align-items: center; width: 100%; }
+    .wordmark {
+      font-family: var(--font-display);
+      font-size: 16px; font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--white); text-decoration: none;
+    }
+    .nav-dot {
+      width: 5px; height: 5px; border-radius: 50%;
+      background: var(--white); margin-left: 8px;
+      animation: blink 2.4s ease-in-out infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1;}50%{opacity:0.2;} }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding-top: 64px;
+      position: relative; overflow: hidden;
+    }
+
+    /* HERO SVG ILLUSTRATION — top right */
+    .hero-illustration {
+      position: absolute;
+      right: -60px; top: 50%;
+      transform: translateY(-52%);
+      width: 420px; height: 420px;
+      opacity: 0.12;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .hero-eyebrow {
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 32px;
+      opacity: 0; transform: translateY(14px);
+      animation: fadeUp 0.7s ease forwards 0.2s;
+    }
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(42px, 7vw, 82px);
+      font-weight: 800; letter-spacing: -0.045em; line-height: 1.0;
+      color: var(--white); margin-bottom: 28px;
+      opacity: 0; transform: translateY(20px);
+      animation: fadeUp 0.8s ease forwards 0.35s;
+    }
+    .hero h1 span { color: var(--muted); }
+    .hero p {
+      font-size: 17px; font-weight: 300; color: var(--muted);
+      line-height: 1.7; max-width: 520px; letter-spacing: -0.01em;
+      opacity: 0; transform: translateY(18px);
+      animation: fadeUp 0.8s ease forwards 0.5s;
+    }
+    .hero-scroll {
+      margin-top: 80px;
+      display: flex; align-items: center; gap: 14px;
+      opacity: 0; animation: fadeUp 0.7s ease forwards 0.75s;
+    }
+    .scroll-line { width: 36px; height: 1px; background: var(--border-hover); }
+    .scroll-label { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); }
+
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+
+    /* SECTIONS */
+    .section { padding: 120px 0; border-top: 1px solid var(--border); }
+    .section-label {
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 52px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .section-label::after { content:''; width:48px; height:1px; background:var(--border); }
+
+    /* PRODUCTS */
+    .product-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .product-card {
+      border: 1px solid var(--border); padding: 40px;
+      position: relative; overflow: hidden;
+      transition: border-color 0.35s ease, transform 0.35s ease;
+    }
+    .card-glow {
+      position: absolute; width: 200px; height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+      pointer-events: none; transform: translate(-50%,-50%);
+      opacity: 0; transition: opacity 0.3s ease;
+    }
+    .product-card:hover { border-color: var(--border-hover); transform: translateY(-3px); }
+    .product-card:hover .card-glow { opacity: 1; }
+
+    .product-icon {
+      width: 38px; height: 38px; border: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; margin-bottom: 28px; color: var(--muted);
+    }
+    .product-tag {
+      display: inline-block; font-size: 10px; font-weight: 500;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); border: 1px solid var(--border);
+      padding: 3px 9px; margin-bottom: 16px;
+    }
+    .product-name {
+      font-family: var(--font-display); font-size: 22px; font-weight: 700;
+      letter-spacing: -0.03em; color: var(--white); margin-bottom: 12px;
+    }
+    .product-desc {
+      font-size: 14px; font-weight: 300; color: var(--muted);
+      line-height: 1.65; margin-bottom: 32px;
+    }
+    .product-link {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; font-weight: 500; color: var(--white);
+      text-decoration: none;
+      transition: gap 0.2s ease, opacity 0.2s ease;
+    }
+    .product-link:hover { gap: 14px; opacity: 0.6; }
+
+    /* ABOUT */
+    .about-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 80px;
+      align-items: center;
+    }
+
+    /* SVG ILLUSTRATION in about */
+    .about-illustration {
+      display: flex; align-items: center; justify-content: center;
+      opacity: 0.5;
+    }
+    .about-illustration svg {
+      width: 100%; max-width: 340px;
+    }
+
+    .about-body p {
+      font-size: 16px; font-weight: 300;
+      color: var(--muted);
+      line-height: 1.85; letter-spacing: -0.01em;
+      margin-bottom: 20px;
+    }
+    .about-body p:last-child { margin-bottom: 0; }
+
+    /* PRINCIPLES */
+    .principles {
+      margin-top: 72px;
+      display: grid; grid-template-columns: repeat(3,1fr);
+      gap: 1px; background: var(--border); border: 1px solid var(--border);
+    }
+    .principle {
+      background: var(--bg); padding: 32px;
+      position: relative; overflow: hidden;
+      transition: background 0.25s ease;
+    }
+    .principle:hover { background: #141414; }
+    .principle-num {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.12em; color: var(--muted); margin-bottom: 16px;
+    }
+    .principle-title {
+      font-family: var(--font-display); font-size: 15px; font-weight: 700;
+      letter-spacing: -0.02em; color: var(--white); margin-bottom: 10px;
+    }
+    .principle-text { font-size: 13px; font-weight: 300; color: var(--muted); line-height: 1.6; }
+
+    /* CONTACT */
+    .contact-inner {
+      display: flex; align-items: flex-end;
+      justify-content: space-between; gap: 40px;
+    }
+
+    /* CONTACT ILLUSTRATION */
+    .contact-illustration {
+      position: absolute; right: 0; bottom: 0;
+      width: 260px; opacity: 0.07; pointer-events: none;
+    }
+
+    .contact-section { position: relative; overflow: hidden; }
+
+    .contact-left h2 {
+      font-family: var(--font-display);
+      font-size: clamp(30px, 5vw, 52px);
+      font-weight: 800; letter-spacing: -0.04em; line-height: 1.05;
+      margin-bottom: 16px;
+    }
+    .contact-left p { font-size: 15px; color: var(--muted); font-weight: 300; max-width: 320px; }
+    .contact-cta {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-family: var(--font-display); font-size: 14px; font-weight: 600;
+      color: var(--white); text-decoration: none;
+      border: 1px solid var(--border); padding: 14px 24px;
+      white-space: nowrap;
+      transition: border-color 0.2s ease, background 0.2s ease;
+    }
+    .contact-cta:hover { border-color: rgba(255,255,255,0.4); background: rgba(255,255,255,0.04); }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 28px 0; position: relative; z-index: 2; }
+    footer .container { display: flex; align-items: center; justify-content: space-between; }
+    footer p { font-size: 12px; color: var(--muted); }
+    .footer-mark { font-family: var(--font-display); font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.15); }
+
+    /* REVEAL */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+
+    /* MOBILE */
+    @media (max-width: 768px) {
+      .container { padding: 0 24px; }
+      .product-grid { grid-template-columns: 1fr; }
+      .about-inner { grid-template-columns: 1fr; }
+      .about-illustration { display: none; }
+      .principles { grid-template-columns: 1fr; }
+      .contact-inner { flex-direction: column; align-items: flex-start; }
+      footer .container { flex-direction: column; gap: 10px; }
+      body { cursor: auto; }
+      #cursor, #cursor-ring { display: none; }
+      .hero-illustration { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="cursor"></div>
+<div id="cursor-ring"></div>
+<div id="mouse-glow"></div>
+<canvas id="bg-canvas"></canvas>
+
+<!-- NAV -->
+<nav>
+  <div class="container">
+    <a class="wordmark" href="/">GenX Labs</a>
+    <div class="nav-dot"></div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <!-- Hero illustration: abstract geometric grid/nodes -->
+  <svg class="hero-illustration" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Outer rings -->
+    <circle cx="200" cy="200" r="180" stroke="white" stroke-width="0.5"/>
+    <circle cx="200" cy="200" r="140" stroke="white" stroke-width="0.5"/>
+    <circle cx="200" cy="200" r="100" stroke="white" stroke-width="0.5"/>
+    <circle cx="200" cy="200" r="60" stroke="white" stroke-width="0.8"/>
+    <!-- Cross lines -->
+    <line x1="200" y1="20" x2="200" y2="380" stroke="white" stroke-width="0.4"/>
+    <line x1="20" y1="200" x2="380" y2="200" stroke="white" stroke-width="0.4"/>
+    <line x1="73" y1="73" x2="327" y2="327" stroke="white" stroke-width="0.3"/>
+    <line x1="327" y1="73" x2="73" y2="327" stroke="white" stroke-width="0.3"/>
+    <!-- Node dots -->
+    <circle cx="200" cy="200" r="4" fill="white"/>
+    <circle cx="200" cy="60" r="3" fill="white"/>
+    <circle cx="200" cy="340" r="3" fill="white"/>
+    <circle cx="60" cy="200" r="3" fill="white"/>
+    <circle cx="340" cy="200" r="3" fill="white"/>
+    <circle cx="200" cy="100" r="2.5" fill="white"/>
+    <circle cx="200" cy="300" r="2.5" fill="white"/>
+    <circle cx="100" cy="200" r="2.5" fill="white"/>
+    <circle cx="300" cy="200" r="2.5" fill="white"/>
+    <circle cx="127" cy="127" r="2" fill="white"/>
+    <circle cx="273" cy="127" r="2" fill="white"/>
+    <circle cx="127" cy="273" r="2" fill="white"/>
+    <circle cx="273" cy="273" r="2" fill="white"/>
+    <!-- Tick marks around outer ring -->
+    <line x1="200" y1="18" x2="200" y2="26" stroke="white" stroke-width="1"/>
+    <line x1="200" y1="374" x2="200" y2="382" stroke="white" stroke-width="1"/>
+    <line x1="18" y1="200" x2="26" y2="200" stroke="white" stroke-width="1"/>
+    <line x1="374" y1="200" x2="382" y2="200" stroke="white" stroke-width="1"/>
+    <!-- Arc highlight -->
+    <path d="M 200 20 A 180 180 0 0 1 367 290" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+  </svg>
+
+  <div class="container">
+    <p class="hero-eyebrow">AI Product Studio</p>
+    <h1>Building AI software<br><span>that works.</span></h1>
+    <p>GenX Labs builds AI-powered software for professionals who don't have time for tools that overpromise and underdeliver. We focus on a single problem per product, go deep on it, and ship something that actually works.</p>
+    <div class="hero-scroll">
+      <div class="scroll-line"></div>
+      <span class="scroll-label">Explore</span>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section class="section">
+  <div class="container">
+    <p class="section-label reveal">Products</p>
+    <div class="product-grid">
+      <div class="product-card reveal">
+        <div class="card-glow"></div>
+        <div class="product-icon">◈</div>
+        <div class="product-tag">M&amp;A · Legal · Finance</div>
+        <p class="product-name">AxiomRisk</p>
+        <p class="product-desc">AI-powered contract risk analysis for M&amp;A professionals. Upload contracts, get instant risk flags, move faster on deals.</p>
+        <a class="product-link" href="https://axiomrisk.ai" target="_blank" rel="noopener">axiomrisk.ai →</a>
+      </div>
+      <div class="product-card reveal reveal-d1">
+        <div class="card-glow"></div>
+        <div class="product-icon">⬡</div>
+        <div class="product-tag">Real Estate · Home</div>
+        <p class="product-name">NeatNest</p>
+        <p class="product-desc">AI-powered home improvement assistant. Plan projects, get estimates, and make smarter decisions about your space.</p>
+        <a class="product-link" href="https://neatnest.ai" target="_blank" rel="noopener">neatnest.ai →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="section">
+  <div class="container">
+    <p class="section-label reveal">About</p>
+    <div class="about-inner">
+      <!-- SVG Illustration: stylised world / connections -->
+      <div class="about-illustration reveal">
+        <svg viewBox="0 0 320 320" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Globe outline -->
+          <circle cx="160" cy="160" r="120" stroke="white" stroke-width="0.8"/>
+          <!-- Latitude lines -->
+          <ellipse cx="160" cy="160" rx="120" ry="40" stroke="white" stroke-width="0.5"/>
+          <ellipse cx="160" cy="160" rx="120" ry="80" stroke="white" stroke-width="0.4"/>
+          <line x1="40" y1="160" x2="280" y2="160" stroke="white" stroke-width="0.4"/>
+          <!-- Longitude lines -->
+          <ellipse cx="160" cy="160" rx="40" ry="120" stroke="white" stroke-width="0.5"/>
+          <ellipse cx="160" cy="160" rx="80" ry="120" stroke="white" stroke-width="0.4"/>
+          <line x1="160" y1="40" x2="160" y2="280" stroke="white" stroke-width="0.4"/>
+          <!-- Location pins -->
+          <!-- UAE -->
+          <circle cx="210" cy="148" r="4" fill="white"/>
+          <line x1="210" y1="148" x2="210" y2="130" stroke="white" stroke-width="0.8"/>
+          <circle cx="210" cy="128" r="2.5" stroke="white" stroke-width="1" fill="none"/>
+          <!-- US -->
+          <circle cx="100" cy="145" r="4" fill="white"/>
+          <line x1="100" y1="145" x2="100" y2="127" stroke="white" stroke-width="0.8"/>
+          <circle cx="100" cy="125" r="2.5" stroke="white" stroke-width="1" fill="none"/>
+          <!-- Connection arc between them -->
+          <path d="M 100 145 Q 155 90 210 148" stroke="white" stroke-width="0.8" stroke-dasharray="4 3"/>
+          <!-- Extra connection nodes -->
+          <circle cx="175" cy="175" r="2" fill="white" opacity="0.6"/>
+          <circle cx="135" cy="168" r="2" fill="white" opacity="0.6"/>
+          <circle cx="188" cy="155" r="1.5" fill="white" opacity="0.4"/>
+          <!-- Orbit ring around globe -->
+          <ellipse cx="160" cy="160" rx="148" ry="50" stroke="white" stroke-width="0.4" stroke-dasharray="6 4" transform="rotate(-25 160 160)"/>
+          <!-- Small satellite dot on orbit -->
+          <circle cx="286" cy="138" r="3" fill="white"/>
+        </svg>
+      </div>
+
+      <div class="about-body reveal reveal-d1">
+        <p>GenX Labs FZE LLC is a licensed AI software company based in Dubai, UAE. We design and develop AI-powered SaaS products for professionals across legal, finance, and real estate sectors with customers across the World.</p>
+        <p>We started GenX Labs with a simple belief: AI should make complex work easier, not more complicated. Too much software tries to do everything and ends up doing nothing well. We take the opposite approach — each product we build is focused on one problem, solved exceptionally well.</p>
+        <p>Our team moves fast, stays lean, and ships products that professionals can rely on. We're not building for hype. We're building for the long term — tools that quietly become indispensable to the people who use them.</p>
+        <p>Based in the UAE and serving a global customer base, GenX Labs is built to grow with its products.</p>
+      </div>
+    </div>
+
+    <div class="principles reveal">
+      <div class="principle">
+        <div class="principle-num">01</div>
+        <div class="principle-title">Focus over breadth</div>
+        <p class="principle-text">One problem. One product. Solved exceptionally well.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-num">02</div>
+        <div class="principle-title">Ship fast, stay lean</div>
+        <p class="principle-text">Small teams, fast decisions, real products in users' hands.</p>
+      </div>
+      <div class="principle">
+        <div class="principle-num">03</div>
+        <div class="principle-title">Built for the long term</div>
+        <p class="principle-text">Tools that quietly become indispensable to the people who use them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="section contact-section">
+  <!-- Background illustration -->
+  <svg class="contact-illustration" viewBox="0 0 260 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="130" cy="130" r="120" stroke="white" stroke-width="0.6"/>
+    <circle cx="130" cy="130" r="90" stroke="white" stroke-width="0.4"/>
+    <circle cx="130" cy="130" r="60" stroke="white" stroke-width="0.4"/>
+    <circle cx="130" cy="130" r="30" stroke="white" stroke-width="0.6"/>
+    <circle cx="130" cy="130" r="4" fill="white"/>
+    <line x1="130" y1="10" x2="130" y2="250" stroke="white" stroke-width="0.3"/>
+    <line x1="10" y1="130" x2="250" y2="130" stroke="white" stroke-width="0.3"/>
+    <path d="M 130 10 A 120 120 0 0 1 238 195" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+  </svg>
+
+  <div class="container">
+    <p class="section-label reveal">Contact</p>
+    <div class="contact-inner reveal">
+      <div class="contact-left">
+        <h2>Let's work<br>together.</h2>
+        <p>Partnerships, enterprise inquiries, or just want to say hello.</p>
+      </div>
+      <a class="contact-cta" href="mailto:hello@genxtechsolutions.com">hello@genxtechsolutions.com →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <p>© 2026 GenX Labs FZE LLC. All rights reserved.</p>
+    <span class="footer-mark">GenX Labs</span>
+  </div>
+</footer>
+
+<script>
+  // CURSOR
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursor-ring');
+  const glow = document.getElementById('mouse-glow');
+  let mx = -200, my = -200, rx = -200, ry = -200;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    glow.style.left = mx + 'px';
+    glow.style.top = my + 'px';
+    cursor.style.left = mx + 'px';
+    cursor.style.top = my + 'px';
+  });
+
+  (function animateRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx + 'px';
+    ring.style.top = ry + 'px';
+    requestAnimationFrame(animateRing);
+  })();
+
+  document.querySelectorAll('a, button, .product-card, .principle').forEach(el => {
+    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+  });
+
+  // CARD GLOW
+  document.querySelectorAll('.product-card').forEach(card => {
+    const g = card.querySelector('.card-glow');
+    card.addEventListener('mousemove', e => {
+      const r = card.getBoundingClientRect();
+      g.style.left = (e.clientX - r.left) + 'px';
+      g.style.top = (e.clientY - r.top) + 'px';
+    });
+  });
+
+  // PARTICLE CANVAS
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, pts = [];
+
+  function resize() { W = canvas.width = window.innerWidth; H = canvas.height = window.innerHeight; }
+
+  function init() {
+    pts = [];
+    const n = Math.min(Math.floor((W * H) / 16000), 65);
+    for (let i = 0; i < n; i++) {
+      pts.push({
+        x: Math.random()*W, y: Math.random()*H,
+        vx: (Math.random()-0.5)*0.22, vy: (Math.random()-0.5)*0.22,
+        r: Math.random()*1.2+0.3, o: Math.random()*0.4+0.1
+      });
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    for (const p of pts) {
+      const dx = mx-p.x, dy = my-p.y, dist = Math.sqrt(dx*dx+dy*dy);
+      if (dist < 100) {
+        const f = (100-dist)/100*0.4;
+        p.vx -= (dx/dist)*f; p.vy -= (dy/dist)*f;
+      }
+      p.vx *= 0.98; p.vy *= 0.98;
+      const sp = Math.sqrt(p.vx*p.vx+p.vy*p.vy);
+      if (sp > 1.2) { p.vx=(p.vx/sp)*1.2; p.vy=(p.vy/sp)*1.2; }
+      p.x+=p.vx; p.y+=p.vy;
+      if(p.x<0)p.x=W; if(p.x>W)p.x=0;
+      if(p.y<0)p.y=H; if(p.y>H)p.y=0;
+    }
+    for (let i=0;i<pts.length;i++) {
+      for (let j=i+1;j<pts.length;j++) {
+        const dx=pts[i].x-pts[j].x, dy=pts[i].y-pts[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if (d<130) {
+          ctx.beginPath();
+          ctx.strokeStyle=`rgba(255,255,255,${(1-d/130)*0.07})`;
+          ctx.lineWidth=0.5;
+          ctx.moveTo(pts[i].x,pts[i].y);
+          ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+    for (const p of pts) {
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fillStyle=`rgba(255,255,255,${p.o})`;
+      ctx.fill();
+    }
+    requestAnimationFrame(draw);
+  }
+
+  resize(); init(); draw();
+  window.addEventListener('resize', ()=>{ resize(); init(); });
+
+  // SCROLL REVEAL
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach((e,i) => {
+      if (e.isIntersecting) {
+        setTimeout(()=>e.target.classList.add('visible'), i*90);
+        obs.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
